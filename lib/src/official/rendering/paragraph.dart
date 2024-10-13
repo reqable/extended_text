@@ -1905,6 +1905,28 @@ class _SelectableFragment
     }
   }
 
+  List<Rect>? _cachedBoundingBoxes;
+  List<Rect> get boundingBoxes {
+    if (_cachedBoundingBoxes == null) {
+      final List<TextBox> boxes = paragraph.getBoxesForSelection(
+        TextSelection(baseOffset: range.start, extentOffset: range.end),
+      );
+      if (boxes.isNotEmpty) {
+        _cachedBoundingBoxes = <Rect>[];
+        for (final TextBox textBox in boxes) {
+          _cachedBoundingBoxes!.add(textBox.toRect());
+        }
+      } else {
+        final Offset offset =
+            paragraph._getOffsetForPosition(TextPosition(offset: range.start));
+        final Rect rect = Rect.fromPoints(offset,
+            offset.translate(0, -paragraph._textPainter.preferredLineHeight));
+        _cachedBoundingBoxes = <Rect>[rect];
+      }
+    }
+    return _cachedBoundingBoxes!;
+  }
+
   Rect get _rect {
     if (_cachedRect == null) {
       final List<TextBox> boxes = paragraph.getBoxesForSelection(
